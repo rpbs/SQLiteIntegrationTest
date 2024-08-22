@@ -42,7 +42,7 @@ namespace SQLiteIntegrationTest
 
             var productDTO = new Product("Iphone", 1000);
             var jsonContent = JsonContent.Create(productDTO);
-            var request = await Client.PostAsync(url, jsonContent);
+            var request = await Client!.PostAsync(url, jsonContent);
             var result = await request.Content.ReadAsStringAsync();
             var userList = JsonSerializer.Deserialize<ProductDTO>(result);
 
@@ -56,12 +56,12 @@ namespace SQLiteIntegrationTest
         {
             var url = "product";
 
-            var request = await Client.GetAsync(url);
+            var request = await Client!.GetAsync(url);
             var result = await request.Content.ReadAsStringAsync();
             var products = JsonSerializer.Deserialize<List<ProductDTO>>(result);
 
             Assert.IsNotNull(products);
-            Assert.GreaterOrEqual(products.Count, 1);
+            Assert.GreaterOrEqual(products!.Count, 1);
             var productDTO = products[0];   
             Assert.That(productDTO.Id, Is.Not.Null);
             Assert.That(productDTO.Value, Is.Not.Null);
