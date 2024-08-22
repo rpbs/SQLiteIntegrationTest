@@ -10,13 +10,12 @@ namespace SQLiteIntegrationTest
     public class Tests
     {
         private readonly WebApplicationFactory<Program> applicationInstance;
-        private HttpClient Client;
+        private HttpClient? Client;
 
         public Tests()
         {
             applicationInstance = new ApplicationInstance<Program>();
-        }
-        
+        }        
 
         [SetUp]
         public void Setup()
@@ -33,29 +32,23 @@ namespace SQLiteIntegrationTest
         [TearDown]
         public void TearDown()
         {
-            Client.Dispose();            
+            Client!.Dispose();            
         }
 
         [Test, Order(1)]
         public async Task InsertProduct()
         {
-            try
-            {
-                var url = "product";
+            var url = "product";
 
-                var productDTO = new Product("Iphone", 1000);
-                var jsonContent = JsonContent.Create(productDTO);
-                var request = await Client.PostAsync(url, jsonContent);
-                var result = await request.Content.ReadAsStringAsync();
-                var userList = JsonSerializer.Deserialize<ProductDTO>(result);
+            var productDTO = new Product("Iphone", 1000);
+            var jsonContent = JsonContent.Create(productDTO);
+            var request = await Client.PostAsync(url, jsonContent);
+            var result = await request.Content.ReadAsStringAsync();
+            var userList = JsonSerializer.Deserialize<ProductDTO>(result);
 
-                Assert.NotNull(userList);
-                Assert.That(request.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
+            Assert.NotNull(userList);
+            Assert.That(request.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
         }
 
         [Test, Order(2)]
@@ -65,10 +58,14 @@ namespace SQLiteIntegrationTest
 
             var request = await Client.GetAsync(url);
             var result = await request.Content.ReadAsStringAsync();
-            var userList = JsonSerializer.Deserialize<List<ProductDTO>>(result);
+            var products = JsonSerializer.Deserialize<List<ProductDTO>>(result);
 
-            Assert.IsNotNull(userList);
-            Assert.GreaterOrEqual(userList.Count, 1);
+            Assert.IsNotNull(products);
+            Assert.GreaterOrEqual(products.Count, 1);
+            var productDTO = products[0];   
+            Assert.That(productDTO.Id, Is.Not.Null);
+            Assert.That(productDTO.Value, Is.Not.Null);
+            Assert.That(productDTO.Description, Is.Not.Null);
 
         }
     }

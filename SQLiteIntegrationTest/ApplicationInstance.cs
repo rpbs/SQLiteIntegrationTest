@@ -8,8 +8,6 @@ namespace SQLiteIntegrationTest;
 
 internal class ApplicationInstance<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
 {
-    public readonly static string ConnectionString = "Data Source=TestDb.db";
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
@@ -19,7 +17,7 @@ internal class ApplicationInstance<TEntryPoint> : WebApplicationFactory<TEntryPo
             services.AddDbContext<ApplicationContext>(options =>
             {
                 var projectAssemblyName = "SQLiteIntegrationTest";
-                options.UseSqlite(ConnectionString, x => x.MigrationsAssembly(projectAssemblyName));
+                options.UseSqlite("Data Source=TestDb.db", x => x.MigrationsAssembly(projectAssemblyName));
             });
 
             services.AddDbContext<TestContext>();
@@ -28,7 +26,7 @@ internal class ApplicationInstance<TEntryPoint> : WebApplicationFactory<TEntryPo
 
             var context = buildedProvider.GetService<TestContext>();
 
-            context.Database.EnsureDeleted();
+            context!.Database.EnsureDeleted();
 
             context.Database.Migrate();
 
