@@ -11,8 +11,8 @@ using SQLiteIntegrationTest;
 namespace SQLiteIntegrationTest.Migrations
 {
     [DbContext(typeof(TestContext))]
-    [Migration("20240822121536_InitialMigrationSqlite")]
-    partial class InitialMigrationSqlite
+    [Migration("20240823180707_FirstMigration")]
+    partial class FirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

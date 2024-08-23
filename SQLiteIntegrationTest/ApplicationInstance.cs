@@ -12,34 +12,35 @@ internal class ApplicationInstance<TEntryPoint> : WebApplicationFactory<TEntryPo
     {
         builder.ConfigureServices(services =>
         {
-            RemoveAllDbContextsFromServices(services);
+            // I had to remove all the contexts from services 
+            // This was a mandatory thing to achieve the goal
+            var contextServices = services
+            .Where(x => x.ServiceType.BaseType == typeof(DbContextOptions) || x.ServiceType.BaseType == typeof(DbContext)).ToList();
 
+            foreach (var context in contextServices)
+            {
+                services.Remove(context);
+            }
+
+            // Adding the main Context from the application but chaning the connection to use SQLite.
             services.AddDbContext<ApplicationContext>(options =>
             {
                 var projectAssemblyName = "SQLiteIntegrationTest";
                 options.UseSqlite("Data Source=TestDb.db", x => x.MigrationsAssembly(projectAssemblyName));
             });
 
+            // Adding the TestContext
             services.AddDbContext<TestContext>();
 
+            // Building services  
             var buildedProvider = services.BuildServiceProvider();
-
-            var context = buildedProvider.GetService<TestContext>();
-
-            context!.Database.EnsureDeleted();
-
-            context.Database.Migrate();
+            // Getting our Context that is responsible for Creating our SQLite database file. 
+            var testContext = buildedProvider.GetService<TestContext>();
+            // This deletes the SQLite file so each new test will generate a new database.
+            testContext!.Database.EnsureDeleted();
+            // Executes the migration so that creates the database and tables
+            testContext.Database.Migrate();
 
         });
-    }
-
-    private void RemoveAllDbContextsFromServices(IServiceCollection services)
-    {
-        // reverse operation of AddDbContext<XDbContext> which removes  DbContexts from services
-        var descriptors = services.Where(d => d.ServiceType.BaseType == typeof(DbContextOptions)).ToList();
-        descriptors.ForEach(d => services.Remove(d));
-
-        var dbContextDescriptors = services.Where(d => d.ServiceType.BaseType == typeof(DbContext)).ToList();
-        dbContextDescriptors.ForEach(d => services.Remove(d));
     }
 }
